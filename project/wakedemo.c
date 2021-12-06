@@ -52,22 +52,40 @@ update_shape()
 {
   static unsigned char row = screenHeight / 2, col = screenWidth / 2;
   static char blue = 31, green = 0, red = 31;
+  unsigned int color = (blue << 11) | (green << 5) | red;
+  unsigned int color2 = (blue << 9) | (green << 2) | red;
   static unsigned char step = 0;
+  static unsigned char bottomEdge = 159;
+  static unsigned char topEdge = 0;
+  static unsigned char sideEdge = 127;
+  static unsigned char xspeed = 1;
+  static unsigned char yspeed = 1;
+  static unsigned char x = 0;
+  static unsigned char y = 80;
+
   if (switches & SW4) return;
-  if (step <= 60) {
-    int startCol = col - step;
-    int endCol = col + step;
-    int width = 1 + endCol - startCol;
+  clearScreen(COLOR_BLACK);
+  drawString5x7(x, y, "DVD", color, color2);
+  if (switches & SW3) green = (green + 1) % 64;
+  if (switches & SW2) blue = (blue + 2) % 32;
+  if (switches & SW1) red = (red - 3) % 32;
+  x = x + xspeed;
+  y = y + yspeed;
+  if (x + 5 == sideEdge || x == 0) {
+    xspeed = xspeed * -1;
+    //int startCol = col - step;
+    //int endCol = col + step;
+    //int width = 1 + endCol - startCol;
     // a color in this BGR encoding is BBBB BGGG GGGR RRRR
-    unsigned int color = (blue << 11) | (green << 5) | red;
-    fillRectangle(startCol, row+step, width, 1, color);
-    fillRectangle(startCol, row-step, width, 1, color);
-    if (switches & SW3) green = (green + 1) % 64;
-    if (switches & SW2) blue = (blue + 2) % 32;
-    if (switches & SW1) red = (red - 3) % 32;
-    step ++;
-  } else {
-     clearScreen(COLOR_BLUE);
-     step = 0;
+    //unsigned int color = (blue << 11) | (green << 5) | red;
+    // unsigned int color2 = (blue << 9) | (green << 2) | red;
+    //fillRectangle(startCol, row+step, width, 1, color);
+    //fillRectangle(startCol, row-step, width, 1, color);
+    //clearScreen(COLOR_BLACK);
+    //drawString5x7(x, y, "DVD", color, color2);
+    //step ++;
+  }
+  if (y + 7 == bottomEdge || y == 0) {     
+    yspeed = yspeed * -1;
   }
 }
