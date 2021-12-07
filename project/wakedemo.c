@@ -4,6 +4,8 @@
 #include "lcddraw.h"
 #include "led.h"
 #include "switches.h"
+#include "buzzer.h"
+
 
 // axis zero for col, axis 1 for row
 short drawPos[2] = {10,10}, controlPos[2] = {10,10};
@@ -31,7 +33,7 @@ void main()
   configureClocks();
   lcd_init();
   switch_init();
-  
+  buzzer_init();
   enableWDTInterrupts();      /**< enable periodic interrupt */
   or_sr(0x8);	              /**< GIE (enable interrupts) */
   
@@ -66,7 +68,10 @@ update_shape()
   static unsigned char x = 0;
   static unsigned char y = 81;
   
-  if (switches & SW4) return;
+  if (switches & SW4){
+    no_buzzer(); 
+    return;
+  }
   //clearScreen(COLOR_BLACK);
   fillRectangle(x, y-1, 18, 10, color3);
   drawString5x7(x, y, "DVD", color, color3);
@@ -81,29 +86,41 @@ update_shape()
     blue = (blue + 2) % 32;
     yspeed = yspeed * -1;
   }
-  if (switches & SW1) red = (red - 3) % 32;
-
+ 
+  if (switches & SW1) {
+    if (step <= 22) {
+      int startCol = col - step;
+      int endCol = col + step;
+      int width = 1 + endCol - startCol;
+      int startCol2 = col - step;
+      int endCol2 = col + step;
+      int width2 = 1 + endCol - startCol;
+    // a color in this BGR encoding is BBBB BGGG GGGR RRRR
+      unsigned int color = (blue << 11) | (green << 5) | red;
+      unsigned int color2 = (blue << 9) | (green << 2) | red;
+      fillRectangle(startCol, row+step-30, width, 1, color);
+      fillRectangle(startCol2, row-step, width, 1, color);
+      step++;
+    } else {
+      step = 0;
+    }
+    red = (red - 3) % 32;
+    song();
+  }
+  
   if (x + 5 >= rightEdge || x == left_topEdge) {
     xspeed = xspeed * -1;
     green2 = (green2 + 1) % 64;
     blue = (blue2 + 2) % 32;
     red = (red2 - 3) % 32;
-    //int startCol = col - step;
-    //int endCol = col + step;
-    //int width = 1 + endCol - startCol;
-    // a color in this BGR encoding is BBBB BGGG GGGR RRRR
-    //unsigned int color = (blue << 11) | (green << 5) | red;
-    // unsigned int color2 = (blue << 9) | (green << 2) | red;
-    //fillRectangle(startCol, row+step, width, 1, color);
-    //fillRectangle(startCol, row-step, width, 1, color);
-    //clearScreen(COLOR_BLACK);
-    //drawString5x7(x, y, "DVD", color, color2);
-    //step ++;
+    bump_wall();
   }
+  
   if (y + 7 >= bottomEdge || y == left_topEdge) {     
     green2 = (green + 1) % 64;
     blue2 = (blue + 2) % 32;
     red2 = (red - 3) % 32;
     yspeed = yspeed * -1;
+    bump_wall1();
   }
 }

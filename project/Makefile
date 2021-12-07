@@ -1,5 +1,5 @@
 # makfile configuration
-COMMON_OBJECTS 		= wakedemo.o led.o switches.o p2_interrupt_handler.o
+COMMON_OBJECTS 		= wakedemo.o led.o switches.o p2_interrupt_handler.o buzzer.o 
 CPU             	= msp430g2553
 CFLAGS          	= -mmcu=${CPU} -Os -I../h
 LDFLAGS			= -L../lib -L/opt/ti/msp430_gcc/include/ 
@@ -20,7 +20,10 @@ load: wakedemo.elf
 clean:
 	rm -f *.o *.elf *.h~ *.c~ *~
 
-wakedemo.o: led.h switches.h
+wakedemo.o: led.h switches.h buzzer.h
 led.o: led.h
 switches.o: switches.h led.h
-p2_interrupt_handler.c: switches.h
+p2_interrupt_handler.o: switches.h
+buzzer.o: buzzer.h
+#stateMachines.o: stateMachines.h led.h switches.h buzzer.h
+#wdInterruptHandler.o: led.h stateMachines.h

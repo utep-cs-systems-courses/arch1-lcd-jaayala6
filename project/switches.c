@@ -2,6 +2,8 @@
 #include "libTimer.h"
 #include "switches.h"
 #include "led.h"
+#include "buzzer.h"
+
 
 static char 
 switch_update_interrupt_sense()
